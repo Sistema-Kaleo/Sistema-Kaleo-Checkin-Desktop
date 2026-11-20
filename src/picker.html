@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'" />
+  <title>Impressora deste computador</title>
+  <style>
+    body { font-family: system-ui, Segoe UI, sans-serif; margin: 0; padding: 24px; background: #f9fafb; color: #111827; }
+    h1 { font-size: 20px; margin: 0 0 6px; }
+    p { margin: 0 0 16px; color: #4b5563; font-size: 14px; }
+    ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    button { width: 100%; text-align: left; padding: 14px 16px; border: 1px solid #d1d5db; border-radius: 10px; background: #fff; font-size: 15px; cursor: pointer; }
+    button:hover { border-color: #0f766e; background: #f0fdfa; }
+    .tag { font-size: 12px; color: #0f766e; margin-left: 8px; }
+    .auto { display: flex; align-items: center; gap: 8px; margin-top: 18px; font-size: 14px; color: #374151; cursor: pointer; }
+    .empty { padding: 16px; border: 1px dashed #d1d5db; border-radius: 10px; color: #6b7280; }
+  </style>
+</head>
+<body>
+  <h1>Qual impressora este computador usa?</h1>
+  <p>Escolha a impressora de etiquetas. Você pode trocar depois com Ctrl+Shift+P.</p>
+  <ul id="list"></ul>
+  <label class="auto">
+    <input type="checkbox" id="autostart" />
+    Abrir o totem sozinho quando o Windows ligar
+  </label>
+  <script>
+    (async () => {
+      const auto = document.getElementById('autostart')
+      auto.checked = await window.pickerApi.getAutoStart()
+      auto.addEventListener('change', () => window.pickerApi.setAutoStart(auto.checked))
+      const list = document.getElementById('list')
+      const printers = await window.pickerApi.list()
+      if (!printers.length) {
+        list.innerHTML = '<li class="empty">Nenhuma impressora instalada neste computador. Instale a impressora no Windows e abra esta tela de novo (Ctrl+Shift+P).</li>'
+        return
+      }
+      for (const p of printers) {
+        const li = document.createElement('li')
+        const b = document.createElement('button')
+        b.textContent = p.displayName || p.name
+        if (p.isDefault) {
+          const t = document.createElement('span')
+          t.className = 'tag'
+          t.textContent = 'padrão do Windows'
+          b.appendChild(t)
+        }
+        b.addEventListener('click', () => window.pickerApi.choose(p.name))
+        li.appendChild(b)
+        list.appendChild(li)
+      }
+    })()
+  </script>
+</body>
+</html>
