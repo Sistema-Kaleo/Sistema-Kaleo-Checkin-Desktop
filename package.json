@@ -1,7 +1,7 @@
 {
   "name": "kaleo-checkin-desktop",
   "productName": "Kaleo Checkin Desktop",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Casca desktop do totem de check-in do Kaleo, com impressão silenciosa de etiquetas.",
   "author": "Sistema Kaleo",
   "private": true,
@@ -11,7 +11,7 @@
     "start": "node scripts/start.js",
     "test": "node --test",
     "dist": "electron-builder --win --x64 --publish never",
-    "release": "electron-builder --win --x64 --publish always"
+    "release": "node scripts/release.js"
   },
   "devDependencies": {
     "electron": "^45.4.1",
@@ -48,7 +48,7 @@
       "createStartMenuShortcut": true,
       "shortcutName": "Kaleo Checkin Desktop",
       "deleteAppDataOnUninstall": false,
-      "artifactName": "Kaleo-Checkin-Desktop-Setup-${version}.${ext}"
+      "artifactName": "Kaleo-Checkin-Desktop-Setup.${ext}"
     },
     "publish": [
       {

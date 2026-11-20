@@ -2,7 +2,7 @@
 
 Casca desktop do totem de check-in do Kaleo, com **impressão silenciosa** de etiquetas (sem janela de impressão).
 
-> Estado: **versão 0.4.0**. Instalador do Windows e atualização automática pelo GitHub Releases; **sem assinatura de código por enquanto** (fase de testes; decidir antes da implantação).
+> Estado: **versão 0.4.1**. Instalador do Windows e atualização automática pelo GitHub Releases; **sem assinatura de código por enquanto** (fase de testes; decidir antes da implantação).
 
 ## Como rodar em desenvolvimento
 
@@ -34,13 +34,17 @@ Para subir a versão: alterar `version` no `package.json` e em `src/preload.js` 
 Os instaladores e as atualizações ficam no **GitHub Releases** do repositório público `danielmachado-sistemakaleo/Sistema-Kaleo-Checkin-Desktop` (configurado em `build.publish`).
 
 1. Subir a `version` (package.json e `src/preload.js`) e commitar.
-2. Criar um token do GitHub com permissão `repo` e, no PowerShell: `$env:GH_TOKEN = "<token>"; pnpm release`. Isso gera o instalador e publica o Release com os 3 arquivos que a atualização precisa (`.exe`, `.exe.blockmap` e `latest.yml`).
+2. Rodar `pnpm release`. Isso gera o instalador e publica o Release com os 3 arquivos que a atualização precisa (`.exe`, `.exe.blockmap` e `latest.yml`). O token do GitHub vem de `.release.env`:
+   - **Uma vez:** copiar `.release.env.example` para `.release.env` e colar o token (fine-grained, só neste repositório, com *Contents: Read and write*; ou classic com `repo`). O arquivo é ignorado pelo git.
+   - Antes de publicar, o script confere que **tudo está commitado e enviado** (`git push`), porque o GitHub cria a tag da versão a partir do `main` remoto, e **cria o Release sozinho**. Isso evita o erro `422 Published releases must have a valid tag`, que acontecia quando os 3 arquivos tentavam criar o mesmo Release ao mesmo tempo.
+   - O script **se recusa a rodar** se `.release.env` não estiver ignorado pelo git (o repositório é público). `pnpm release -- --check` só confere o token e a proteção, sem publicar.
+   - Alternativa sem arquivo: `$env:GH_TOKEN = "<token>"` na janela do PowerShell antes do `pnpm release`.
    - Sem token: rodar `pnpm dist` e anexar à mão, num Release com a tag `v<versão>`, os 3 arquivos de `dist\`.
 3. Os totens instalados conferem ao abrir e a cada 4 horas, baixam em segundo plano e **instalam só na madrugada (3h às 5h do horário do computador) ou quando o app for fechado**, para nunca reiniciar no meio de um culto.
 
 Para testar a atualização sem esperar a madrugada: abrir o app instalado com a variável `KALEO_UPDATE_NOW=1` (instala assim que baixa).
 
-O token do GitHub é só de quem publica; nenhum segredo vai no aplicativo. O repositório é público de propósito: o app só abre o totem e não contém chave nem dado de igreja.
+O token do GitHub é só de quem publica e fica só no `.release.env` local; nenhum segredo vai no aplicativo. Se o token vazar (commitado ou colado em algum lugar), revogue-o em https://github.com/settings/personal-access-tokens e crie outro. O repositório é público de propósito: o app só abre o totem e não contém chave nem dado de igreja.
 
 ## Como funciona
 
