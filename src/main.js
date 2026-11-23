@@ -1,8 +1,9 @@
 'use strict'
 
-const { app, BrowserWindow, ipcMain, session, Menu, dialog } = require('electron')
+const { app, BrowserWindow, ipcMain, session, Menu, dialog, safeStorage } = require('electron')
 const path = require('node:path')
 const { createStore } = require('./store')
+const { createPairingKeeper } = require('./pairing')
 const {
   isAllowedUrl,
   isPairedKioskPath,
@@ -23,6 +24,7 @@ const SMOKE = process.env.KALEO_SMOKE === '1'
 let mainWindow = null
 let pickerWindow = null
 let store = null
+let pairing = null
 
 if (!app.requestSingleInstanceLock()) {
   app.quit()
@@ -36,12 +38,13 @@ if (!app.requestSingleInstanceLock()) {
   app.on('window-all-closed', () => app.quit())
 }
 
-function start() {
+async function start() {
   store = createStore(app.getPath('userData'))
   Menu.setApplicationMenu(null)
   lockDownSession()
   registerIpc()
   applyAutoStart()
+  await keepPairing()
   createMainWindow()
   if (app.isPackaged && !SMOKE) require('./updater').startAutoUpdate()
 }
@@ -51,7 +54,30 @@ const GUARD_CLOSE = !process.argv.includes('--windowed')
 let quitting = false
 app.on('before-quit', () => {
   quitting = true
+  // Garante que o cookie do pareamento chegue ao disco antes de sair.
+  void session.defaultSession.cookies.flushStore().catch(() => {})
 })
+
+/**
+ * O pareamento do totem é um cookie; reiniciar o Windows de repente podia perdê-lo. Mantém uma cópia
+ * cifrada e recria o cookie se ele sumir (ver `pairing.js`). Falha aqui nunca impede o totem de abrir.
+ */
+async function keepPairing() {
+  try {
+    pairing = createPairingKeeper({
+      session: session.defaultSession,
+      store,
+      safeStorage,
+      origin: ALLOWED_ORIGIN,
+      log: (msg) => console.log('[kaleo-desktop]', msg),
+    })
+    await pairing.restore()
+    pairing.watch()
+    await pairing.capture()
+  } catch (err) {
+    console.log('[kaleo-desktop] pareamento: não foi possível guardar a cópia local:', String(err))
+  }
+}
 
 /** Abre o totem sozinho quando o Windows liga (só no app instalado; padrão: ligado). */
 function applyAutoStart() {
@@ -123,6 +149,14 @@ function createMainWindow() {
     }
     if (isPairedKioskPath(pathname)) void ensurePrinterChosen()
   }
+  // Sem internet ao abrir (ou ao recarregar): tenta de novo sozinho, em vez de ficar na página de erro.
+  wc.on('did-fail-load', (_event, code, _desc, failedUrl, isMainFrame) => {
+    if (SMOKE || !isMainFrame || code === -3) return // -3 = navegação cancelada de propósito
+    setTimeout(() => {
+      if (!mainWindow || mainWindow.isDestroyed()) return
+      void wc.loadURL(isAllowedUrl(failedUrl, ALLOWED_ORIGIN) ? failedUrl : START_URL)
+    }, 10000)
+  })
   wc.on('did-navigate', onNavigated)
   wc.on('did-navigate-in-page', onNavigated)
 

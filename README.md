@@ -51,7 +51,8 @@ O token do GitHub é só de quem publica e fica só no `.release.env` local; nen
 1. Abre o totem do Kaleo **em tela cheia** e não deixa a janela sair do domínio dele.
 2. Logo depois do pareamento, pergunta qual impressora do Windows este computador usa (fica salva só nesta máquina) e se o totem deve **abrir sozinho quando o Windows ligar** (ligado por padrão; só no app instalado).
 3. Expõe ao totem a ponte `window.kaleoDesktop.print({ widthMm, heightMm })`. O totem a usa quando a impressora cadastrada no Kaleo (Check-in › Configurações › Impressoras) é do driver **"Aplicativo Kaleo Checkin Desktop"**. A ponte imprime em silêncio na impressora escolhida, no tamanho do papel, e devolve `{ ok: true, ms }` ou `{ ok: false, error }`; com erro, o totem avisa na tela.
-4. **Fechar por engano não funciona:** Alt+F4 é ignorado. Para sair, `Ctrl+Shift+Q` e confirmar. Desligar o Windows continua funcionando.
+4. **O pareamento sobrevive a reiniciar o computador:** o cookie de pareamento do Kaleo tem uma cópia cifrada pelo Windows (`safeStorage`) na pasta de dados do app (`pairing.js`); se o Chromium perder o cookie, o app o recria ao abrir. Desparear no totem apaga a cópia também. Sem internet ao abrir, o app tenta de novo sozinho a cada 10 segundos.
+5. **Fechar por engano não funciona:** Alt+F4 é ignorado. Para sair, `Ctrl+Shift+Q` e confirmar. Desligar o Windows continua funcionando.
 
 Sem o aplicativo (navegador comum), a impressora desse driver cai na janela de impressão.
 

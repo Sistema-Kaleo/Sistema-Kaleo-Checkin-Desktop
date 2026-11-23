@@ -10,6 +10,6 @@ const { contextBridge, ipcRenderer } = require('electron')
 // `error` é um código curto: 'sem_impressora', 'origem_invalida', 'tamanho_invalido' ou o
 // motivo informado pelo Windows.
 contextBridge.exposeInMainWorld('kaleoDesktop', {
-  version: '0.4.1',
+  version: '0.4.2',
   print: (size) => ipcRenderer.invoke('print:silent', size),
 })

@@ -1,7 +1,7 @@
 {
   "name": "kaleo-checkin-desktop",
   "productName": "Kaleo Checkin Desktop",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Casca desktop do totem de check-in do Kaleo, com impressão silenciosa de etiquetas.",
   "author": "Sistema Kaleo",
   "private": true,
