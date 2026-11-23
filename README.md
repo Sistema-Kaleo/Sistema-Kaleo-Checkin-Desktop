@@ -2,7 +2,7 @@
 
 Casca desktop do totem de check-in do Kaleo, com **impressão silenciosa** de etiquetas (sem janela de impressão).
 
-> Estado: **versão 0.4.1**. Instalador do Windows e atualização automática pelo GitHub Releases; **sem assinatura de código por enquanto** (fase de testes; decidir antes da implantação).
+> Estado: **versão 0.4.3**. Instalador do Windows e atualização automática pelo GitHub Releases; **sem assinatura de código por enquanto** (fase de testes; decidir antes da implantação).
 
 ## Como rodar em desenvolvimento
 
@@ -42,7 +42,16 @@ Os instaladores e as atualizações ficam no **GitHub Releases** do repositório
    - Sem token: rodar `pnpm dist` e anexar à mão, num Release com a tag `v<versão>`, os 3 arquivos de `dist\`.
 3. Os totens instalados conferem ao abrir e a cada 4 horas, baixam em segundo plano e **instalam só na madrugada (3h às 5h do horário do computador) ou quando o app for fechado**, para nunca reiniciar no meio de um culto.
 
-Para testar a atualização sem esperar a madrugada: abrir o app instalado com a variável `KALEO_UPDATE_NOW=1` (instala assim que baixa).
+Para testar a atualização sem esperar a madrugada:
+
+- **`Ctrl+Shift+U`** no app instalado confere na hora, mostra a versão instalada e, se a nova já baixou, oferece **Instalar agora** (reinicia o totem) ou deixar para a madrugada.
+- Ou abrir o app com a variável `KALEO_UPDATE_NOW=1` (instala assim que baixa).
+
+O app instalado não tem console: o que a atualização fez fica em `update.log`, na pasta de dados (`%APPDATA%\Kaleo Checkin Desktop\update.log`, limitado a ~200 KB).
+
+**Limpeza:** o electron-updater deixa em `%LOCALAPPDATA%\kaleo-checkin-desktop-updater` o instalador baixado e o `installer.exe` (~240 MB). Quando o app confirma que está na versão mais recente, ele apaga esses dois (o `current.blockmap`, pequeno, fica). Instalar por cima troca os arquivos do programa e **mantém** a impressora, o pareamento e o registro (pasta de dados do app).
+
+**Nome do instalador:** o arquivo publicado se chama sempre `Kaleo-Checkin-Desktop-Setup.exe` (sem a versão) para o link `releases/latest/download/...` nunca mudar; por isso o navegador cria `(1)`, `(2)` ao baixar de novo.
 
 O token do GitHub é só de quem publica e fica só no `.release.env` local; nenhum segredo vai no aplicativo. Se o token vazar (commitado ou colado em algum lugar), revogue-o em https://github.com/settings/personal-access-tokens e crie outro. O repositório é público de propósito: o app só abre o totem e não contém chave nem dado de igreja.
 
@@ -56,7 +65,7 @@ O token do GitHub é só de quem publica e fica só no `.release.env` local; nen
 
 Sem o aplicativo (navegador comum), a impressora desse driver cai na janela de impressão.
 
-Atalhos: `F5` recarrega · `F11` alterna a tela cheia · `Ctrl+Shift+P` troca a impressora e o início automático · `Ctrl+Shift+Q` sai · `--windowed` abre em janela e libera o Alt+F4 (desenvolvimento).
+Atalhos: `F5` recarrega · `F11` alterna a tela cheia · `Ctrl+Shift+P` troca a impressora e o início automático · `Ctrl+Shift+U` confere atualização · `Ctrl+Shift+Q` sai · `--windowed` abre em janela e libera o Alt+F4 (desenvolvimento).
 
 O terminal (só em desenvolvimento) mostra o tempo de cada impressão (`impressão enviada em N ms`).
 

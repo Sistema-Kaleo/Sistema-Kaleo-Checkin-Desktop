@@ -20,9 +20,63 @@ function shouldInstallNow({ downloaded, now }) {
   return downloaded === true && isInstallWindow(now)
 }
 
+// ── Cache do updater ────────────────────────────────────────────────────────
+//
+// O electron-updater guarda o instalador baixado em `%LOCALAPPDATA%\<updaterCacheDirName>` (o nome vem do
+// `app-update.yml` gerado no build) e NÃO apaga o `installer.exe` nem o `pending\` depois de instalar:
+// ficam ~240 MB parados por computador. `current.blockmap` fica (é pequeno e acelera a próxima atualização).
+
+/** Mesmo valor de `updaterCacheDirName` no app-update.yml do instalador. */
+const UPDATER_CACHE_DIR_NAME = 'kaleo-checkin-desktop-updater'
+
+/** Pasta do cache do updater, ou null sem LOCALAPPDATA (nunca adivinha um caminho). */
+function updaterCacheDir(localAppData) {
+  if (typeof localAppData !== 'string' || localAppData.trim() === '') return null
+  return require('node:path').join(localAppData, UPDATER_CACHE_DIR_NAME)
+}
+
+/** O que sobra de uma atualização já instalada e pode ser apagado. */
+function staleCacheEntries() {
+  return ['installer.exe', 'pending']
+}
+
+// ── Registro (update.log) ───────────────────────────────────────────────────
+
+const LOG_MAX_CHARS = 200_000
+const LOG_KEEP_CHARS = 100_000
+
+/** Uma linha do registro: data ISO + mensagem. Nunca lança (argumento estranho vira texto). */
+function formatLogLine(date, args) {
+  const text = args
+    .map((a) => {
+      if (typeof a === 'string') return a
+      if (a instanceof Error) return a.message
+      try {
+        return JSON.stringify(a)
+      } catch {
+        return String(a)
+      }
+    })
+    .join(' ')
+  return `${date.toISOString()} ${text}\n`
+}
+
+/** Mantém o registro pequeno: passando do limite, guarda só o final (cortando na quebra de linha). */
+function trimLogText(text, max = LOG_MAX_CHARS, keep = LOG_KEEP_CHARS) {
+  if (text.length <= max) return text
+  const tail = text.slice(text.length - keep)
+  const newline = tail.indexOf('\n')
+  return newline >= 0 ? tail.slice(newline + 1) : tail
+}
+
 module.exports = {
   INSTALL_WINDOW_START_HOUR,
   INSTALL_WINDOW_END_HOUR,
+  UPDATER_CACHE_DIR_NAME,
   isInstallWindow,
   shouldInstallNow,
+  updaterCacheDir,
+  staleCacheEntries,
+  formatLogLine,
+  trimLogText,
 }

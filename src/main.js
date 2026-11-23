@@ -46,7 +46,10 @@ async function start() {
   applyAutoStart()
   await keepPairing()
   createMainWindow()
-  if (app.isPackaged && !SMOKE) require('./updater').startAutoUpdate()
+  if (app.isPackaged && !SMOKE) {
+    const { createFileLogger } = require('./update-log')
+    require('./updater').startAutoUpdate(createFileLogger(path.join(app.getPath('userData'), 'update.log')))
+  }
 }
 
 /** Fechar a janela (Alt+F4, por engano) é ignorado; só sai por Ctrl+Shift+Q ou ao desligar o Windows. */
@@ -93,7 +96,7 @@ function confirmQuit() {
     cancelId: 1,
     title: 'Kaleo Checkin Desktop',
     message: 'Fechar o Kaleo Checkin Desktop?',
-    detail: 'Enquanto estiver fechado, este computador não registra presenças.',
+    detail: `Versão ${app.getVersion()}. Enquanto estiver fechado, este computador não registra presenças.`,
   })
   if (choice === 0) app.quit()
 }
@@ -174,6 +177,9 @@ function createMainWindow() {
       event.preventDefault()
     } else if (input.control && input.shift && input.key.toLowerCase() === 'q') {
       confirmQuit()
+      event.preventDefault()
+    } else if (input.control && input.shift && input.key.toLowerCase() === 'u') {
+      void require('./updater').manualCheck(mainWindow)
       event.preventDefault()
     }
   })
