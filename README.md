@@ -31,7 +31,7 @@ Para subir a versão: alterar `version` no `package.json` e em `src/preload.js` 
 
 ## Como publicar uma versão e atualizar os totens
 
-Os instaladores e as atualizações ficam no **GitHub Releases** do repositório público `danielmachado-sistemakaleo/Sistema-Kaleo-Checkin-Desktop` (configurado em `build.publish`).
+Os instaladores e as atualizações ficam no **GitHub Releases** do repositório público `Sistema-Kaleo/Sistema-Kaleo-Checkin-Desktop` (configurado em `build.publish`).
 
 1. Subir a `version` (package.json e `src/preload.js`) e commitar.
 2. Rodar `pnpm release`. Isso gera o instalador e publica o Release com os 3 arquivos que a atualização precisa (`.exe`, `.exe.blockmap` e `latest.yml`). O token do GitHub vem de `.release.env`:

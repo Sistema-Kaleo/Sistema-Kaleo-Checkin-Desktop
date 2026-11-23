@@ -53,7 +53,7 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "danielmachado-sistemakaleo",
+        "owner": "Sistema-Kaleo",
         "repo": "Sistema-Kaleo-Checkin-Desktop",
         "releaseType": "release"
       }
