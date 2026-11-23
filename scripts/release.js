@@ -99,8 +99,13 @@ async function main() {
   // 2) Tudo commitado e enviado? (arquivos ignorados pelo git, como o .release.env, não contam)
   const dirty = git(['status', '--porcelain']).stdout.trim().length > 0
   const headSha = git(['rev-parse', 'HEAD']).stdout.trim()
-  const remote = await api('GET', '/commits/main')
+  // Com o token: o limite sem token é de 60 consultas por hora por internet (num escritório, estoura fácil).
+  const remote = await api('GET', '/commits/main', token)
   const remoteSha = remote.status === 200 && remote.json ? remote.json.sha : null
+  if (remoteSha === null) {
+    const why = remote.json && remote.json.message ? ' — ' + remote.json.message : ''
+    console.error(`[release] O GitHub respondeu HTTP ${remote.status ?? 'sem resposta'}${why}`)
+  }
   const problem = releasePreflightProblem({ dirty, headSha, remoteSha })
   if (problem) fail(problem)
 
